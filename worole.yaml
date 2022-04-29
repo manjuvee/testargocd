@@ -1,0 +1,37 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: wo-uptime-monitoring
+  namespace: test
+  labels:
+    app: wo-uptime-monitoring
+    app.kubernetes.io/component: wo-uptime-monitoring
+    app.kubernetes.io/instance: wo-uptime-monitoring
+    app.kubernetes.io/managed-by: wo-core-operator
+    app.kubernetes.io/name: wo-uptime-monitoring
+rules:
+  - verbs:
+      - get
+      - watch
+      - list
+    apiGroups:
+      - ''
+    resources:
+      - configmaps
+      - secrets
+      - serviceaccounts
+  - verbs:
+      - get
+      - list
+    apiGroups:
+      - eventprocessing.automation.ibm.com
+    resources:
+      - eventprocessors
+  - verbs:
+      - get
+      - list
+    apiGroups:
+      - shim.bedrock.ibm.com
+    resources:
+      - kafkaclaims
+
