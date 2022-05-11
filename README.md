@@ -1,2 +1,0 @@
-# testargocd
-testing
