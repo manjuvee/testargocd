@@ -1,0 +1,10 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: wo-test
+  annotations:
+    argocd.argoproj.io/sync-wave: "7"
+  namespace: test
+spec:
+  selfSigned: {}
+  

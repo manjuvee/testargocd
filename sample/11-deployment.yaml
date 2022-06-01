@@ -1,0 +1,121 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    productChargedContainers: "All"
+    productID: "099c1256276342309e808ebd6dfc0e59"
+    productMetric: "FREE"
+    productName: "IBM Automation Foundation"
+  name: wo-test
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+  namespace: test
+  labels:
+    app: wo-test
+    app.kubernetes.io/component: wo-test
+    app.kubernetes.io/instance: wo-test
+    app.kubernetes.io/managed-by: {{ .Values.metadata.argocd_namespace }}
+    app.kubernetes.io/name: wo-test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wo-test
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: wo-test
+        app.kubernetes.io/component: wo-test
+        app.kubernetes.io/instance: wo-test
+        app.kubernetes.io/managed-by: wo-core-operator
+        app.kubernetes.io/name: wo-test
+    spec:
+      restartPolicy: Always
+      serviceAccountName: wo-uptime-monitoring-serviceaccount
+      schedulerName: default-scheduler
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - amd64
+                      - ppc64le
+                      - s390x
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: wo-test
+                topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: 100m
+              ephemeral-storage: 500Mi
+              memory: 60Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 40Mi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          name: wo-test
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: VERSION
+              value: v1.3
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          ports:
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: service-crt
+              readOnly: true
+              mountPath: /etc/service-crt
+          image: {{ .Values.wo_uptime_monitoring.image }}
+      imagePullSecrets:
+      - name: push-secret1
+      serviceAccount: wo-uptime-monitoring-serviceaccount
+      volumes:
+        - name: service-crt
+          secret:
+            secretName: wo-test

@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: update-lambda
+  annotations:
+    argocd.argoproj.io/sync-wave: "100"
+    argocd.argoproj.io/sync-options: Replace=true
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  namespace: test
+spec:
+  template:
+    spec:
+      serviceAccountName: wo-uptime-monitoring-serviceaccount
+      restartPolicy: Never
+      containers:
+        - name: create-route-wo-uptime
+          image: ibmcom/pipeline-base-image
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TARGET_NAMESPACE
+              value: "{{ .Values.metadata.wo_uptime_namespace }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # set -eo pipefail
+              
+              oc get secrets/wo-uptime-monitoring -n wo-sre-status -o template='{{index .data "ca.crt"}}' | base64 -d >> route_ca.crt
+              if [ 0 -eq $? ]; then
+                echo "Extract the CA Certificate from secret"
+                oc create route reencrypt wo-uptime-monitoring --service="wo-uptime-monitoring" --path="/wo/health" --dest-ca-cert="./route_ca.crt"  --port="https" -n wo-sre-status
+              else
+                echo "Failed to extract the CA Certificate from secret"
+              fi
+  parallelism: 1
+  backoffLimit: 1

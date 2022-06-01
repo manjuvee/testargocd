@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wo-test
+  annotations:
+    argocd.argoproj.io/sync-wave: "9"
+  namespace: test
+data:
+  zen: |+
+    {
+          "endpoints": [
+            {
+              "url": "https://zen-core-svc.demo-iaf.svc:3443/monitor",
+              "certSecret": {
+                "name": "internal-tls",
+                "key": "certificate.pem"
+              },
+              "authSecret": "{}"
+            },
+            {
+              "url": "https://usermgmt-svc.demo-iaf.svc:3443/?ready=true",
+              "certSecret": {
+                "name": "internal-tls",
+                "key": "certificate.pem"
+              },
+              "authSecret": "{}"
+            },
+            {
+              "url": "https://zen-core-api-svc.demo-iaf.svc:4444/v1/monitor",
+              "certSecret": {
+                "name": "internal-tls",
+                "key": "certificate.pem"
+              },
+              "authSecret": "{}"
+            }
+          ]
+        }
+        
