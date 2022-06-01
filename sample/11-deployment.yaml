@@ -111,7 +111,7 @@ spec:
             - name: service-crt
               readOnly: true
               mountPath: /etc/service-crt
-          image: {{ .Values.wo_uptime_monitoring.image }}
+          image: us.icr.io/abp-builds/wo-uptime-monitoring:latest
       imagePullSecrets:
       - name: push-secret1
       serviceAccount: wo-uptime-monitoring-serviceaccount
