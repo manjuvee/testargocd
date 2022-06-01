@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "100"
     argocd.argoproj.io/sync-options: Replace=true
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
-  namespace: wo-sre-status
+  namespace: default
 spec:
   template:
     spec:
