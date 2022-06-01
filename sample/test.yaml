@@ -4,8 +4,6 @@ metadata:
   name: update-lambda
   annotations:
     argocd.argoproj.io/sync-wave: "100"
-    argocd.argoproj.io/sync-options: Replace=true
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
   namespace: default
 spec:
   template:
